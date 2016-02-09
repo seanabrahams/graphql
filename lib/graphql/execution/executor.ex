@@ -139,12 +139,16 @@ defmodule GraphQL.Execution.Executor do
   end
 
   defp complete_value_catching_error(context, return_type, field_asts, info, result) do
-
     # TODO lots of error checking
     complete_value(context, return_type, field_asts, info, result)
   end
 
   defp complete_value(_, _, _, _, nil), do: nil
+
+  defp complete_value(context, %ObjectType{} = return_type, field_asts, _info, result) do
+    sub_field_asts = collect_sub_fields(context, return_type, field_asts)
+    execute_fields(context, return_type, result, sub_field_asts.fields)
+  end
 
   defp complete_value(context, %ObjectType{} = return_type, field_asts, _info, result) do
     sub_field_asts = collect_sub_fields(context, return_type, field_asts)
@@ -168,6 +172,11 @@ defmodule GraphQL.Execution.Executor do
     end
   end
 
+  defp complete_value(context, return_type, field_asts, info, result) when is_atom(return_type) do
+    type = apply(return_type, :type, [])
+    complete_value(context, type, field_asts, info, result)
+  end
+
   defp complete_value(_context, return_type, _field_asts, _info, result) do
     GraphQL.Types.serialize(return_type, result)
   end
@@ -188,12 +197,19 @@ defmodule GraphQL.Execution.Executor do
   end
   def maybe_unwrap(item), do: item
 
+  defp get_fields(type, field_name) when is_atom(type) do
+    get_fields(apply(type, :type, []), field_name)
+  end
+  defp get_fields(type, field_name) do
+    maybe_unwrap(type.fields)[field_name]
+  end
+
   defp field_definition(_schema, parent_type, field_name) do
     case field_name do
       :__typename -> GraphQL.Type.Introspection.meta(:typename)
       :__schema -> GraphQL.Type.Introspection.meta(:schema)
       :__type -> GraphQL.Type.Introspection.meta(:type)
-      _ -> maybe_unwrap(parent_type.fields)[field_name]
+      _ -> get_fields(parent_type, field_name)
     end
   end
 

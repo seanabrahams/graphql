@@ -1,0 +1,14 @@
+# GraphQL TestSchema
+type A {
+  id: String
+  blah: Int
+  floater: Float
+}
+
+query blah {
+  name {
+    bigger_name {
+      otherfield ding dang dong
+    }
+  }
+}
