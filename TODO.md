@@ -27,7 +27,8 @@ This is mostly inspired from Ecto, but instead of relation schemas, defining Gra
 
 ```elixir
 defmodule MyApp.Types.User do
-  use GraphQL.Type
+  use GraphQL.Type, path: "/blah/**/*.graphql"
+
   # use GraphQL.Type.Scalar
 
   # Q: Is it necessary to repeat the "User" string or

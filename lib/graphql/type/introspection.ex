@@ -43,7 +43,7 @@ defmodule GraphQL.Type.Introspection do
           mutationType: %{
             description: "If this server supports mutation, the type that mutation operations will be rooted at.",
             type: Type,
-            resolve: nil #fn(%{mutation: mutation}, _, _) -> mutation end
+            resolve: fn(%{mutation: mutation}, _, _) -> mutation end
           },
           subscriptionType: %{
             description: "If this server support subscription, the type that subscription operations will be rooted at.",

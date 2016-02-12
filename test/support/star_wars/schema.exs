@@ -2,7 +2,6 @@ defmodule StarWars.Schema do
 
   alias GraphQL.Type.ObjectType
   alias GraphQL.Type.List
-  alias GraphQL.Type.Enum
   alias GraphQL.Type.Interface
   alias GraphQL.Type.String
   alias GraphQL.Type.NonNull
@@ -18,7 +17,7 @@ defmodule StarWars.Schema do
   #
   defmodule Episode do
     def type do
-      %{
+      GraphQL.Type.Enum.new %{
         name: "Episode",
         description: "One of the films in the Star Wars Trilogy",
         values: %{
@@ -26,13 +25,13 @@ defmodule StarWars.Schema do
           EMPIRE: %{value: 5, description: "Released in 1980"},
           JEDI: %{value: 6, description: "Released in 1983"}
         }
-      } |> Enum.new
+      }
     end
   end
 
   defmodule Character do
     def type do
-      %{
+      Interface.new %{
         name: "Character",
         description: "A character in the Star Wars Trilogy",
         fields: %{
@@ -44,7 +43,7 @@ defmodule StarWars.Schema do
         resolver: fn(x) ->
           if StarWars.Data.get_human(x.id), do: Human, else: Droid
         end
-      } |> Interface.new
+      }
     end
   end
 
@@ -95,6 +94,7 @@ defmodule StarWars.Schema do
         hero: %{
           type: Character,
           args: %{
+            # TODO this should be a type InputObject
             episode: %{
               type: Episode,
               description: "If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode"
