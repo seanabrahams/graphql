@@ -4,7 +4,7 @@ defmodule GraphQL.Type.Introspection do
   alias GraphQL.Type.ScalarType
   alias GraphQL.Type.Interface
   alias GraphQL.Type.List
-  alias GraphQL.Type.Enum
+  # alias GraphQL.Type.Enum
   alias GraphQL.Type.NonNull
   alias GraphQL.Type.String
   alias GraphQL.Type.Boolean
@@ -114,7 +114,7 @@ defmodule GraphQL.Type.Introspection do
                 %ObjectType{} -> "OBJECT"
                 %Interface{} -> "INTERFACE"
                 #%Union{} -> "UNION"
-                %Enum{} -> "ENUM"
+                %GraphQL.Type.Enum{} -> "ENUM"
                 #%Input{} -> "INPUT_OBJECT"
                 %List{} -> "LIST"
                 %NonNull{} -> "NON_NULL"
@@ -189,7 +189,7 @@ defmodule GraphQL.Type.Introspection do
             type: %List{ofType: %NonNull{ofType: EnumValue}},
             args: %{includeDeprecated: %{type: %Boolean{}, defaultValue: false}},
             resolve: fn
-              (%Enum{} = schema, _, _) -> schema.values
+              (%GraphQL.Type.Enum{} = schema, _, _) -> schema.values
               (_, _, _) -> nil
             end
             # resolve(type, { includeDeprecated }) {
@@ -257,7 +257,7 @@ defmodule GraphQL.Type.Introspection do
             description: "Indicates this type is a non-null. `ofType` is a valid field."
           }
         }
-      } |> Enum.new
+      } |> GraphQL.Type.Enum.new
     end
   end
 

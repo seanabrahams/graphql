@@ -126,16 +126,20 @@ defmodule GraphQL.Execution.Executor do
       }
 
       resolution = Map.get(field_def, :resolve)
+      if is_atom(source) do
+        IO.inspect source
+        source = apply(source, :type, [])
+      end
       result = case resolution do
-        {mod, fun}    -> apply(mod, fun, [source, args, info])
+        nil ->           Map.get(source, field_name)
+        {mod, fun} ->    apply(mod, fun, [source, args, info])
         {mod, fun, _} -> apply(mod, fun, [source, args, info])
         resolve when is_function(resolve) ->
-          resolve.(source, args, info)
+                         apply(resolve, [source, args, info])
+        # type_module when is_atom(type_module) ->
+        #   IO.inspect type_module
         _ ->
-          cond do
-            resolution ->  resolution
-            true -> Map.get(source, field_name, nil)
-          end
+          resolution
       end
       complete_value_catching_error(context, return_type, field_asts, info, result)
     else
