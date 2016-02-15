@@ -134,14 +134,14 @@ defmodule GraphQL.Type.Introspection do
             type: %List{ofType: %NonNull{ofType: Field}},
             args: %{includeDeprecated: %{type: %Boolean{}, defaultValue: false}},
             resolve: fn
-              (%ObjectType{} = schema, args, rest) ->
+              (%ObjectType{} = schema, _, _) ->
                 thunk_fields = GraphQL.Execution.Executor.maybe_unwrap(schema.fields)
                 Enum.map(thunk_fields, fn({n, v}) -> Map.put(v, :name, n) end)
                 # |> filter_deprecated
-              (%Interface{} = schema, args, rest) ->
+              (%Interface{} = schema, _, _) ->
                 thunk_fields = GraphQL.Execution.Executor.maybe_unwrap(schema.fields)
                 Enum.map(thunk_fields, fn({n, v}) -> Map.put(v, :name, n) end)
-              (s, _, _) ->
+              (_, _, _) ->
                 []
             end
             # resolve(type, { includeDeprecated }) {
@@ -161,7 +161,7 @@ defmodule GraphQL.Type.Introspection do
           interfaces: %{
             type: %List{ofType: %NonNull{ofType: Type}},
             resolve: fn
-              (%ObjectType{} = schema, args, rest) ->
+              (%ObjectType{} = schema, _, _) ->
                 schema.interfaces
               (_, _, _) -> nil
             end
@@ -169,13 +169,13 @@ defmodule GraphQL.Type.Introspection do
           possibleTypes: %{
             type: %List{ofType: %NonNull{ofType: Type}},
             resolve: fn
-              (%Interface{name: name}, args, info) ->
+              (%Interface{name: name}, _args, info) ->
                 # TODO simplify this logic
                 GraphQL.Schema.reduce_types(info.schema)
                 |> Enum.filter(fn {_, t} ->
                   Map.get(t, :interfaces, [])
                   |> Enum.filter(&(&1.name === name)) !== []
-                end) |> Enum.map(fn({k,v}) -> v end)
+                end) |> Enum.map(fn({_, v}) -> v end)
               (_, _, _) -> nil
             end
             # resolve(type) {
