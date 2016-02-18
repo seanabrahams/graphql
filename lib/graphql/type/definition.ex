@@ -16,6 +16,10 @@ defprotocol GraphQL.AbstractType do
   def get_object_type(abstract_type, object, schema)
 end
 
+defprotocol GraphQL.InputObjectType do
+  @type t :: GraphQL.Type.Scalar.t | GraphQL.Type.Enum.t | GraphQL.Type.Input.t | GraphQL.Type.List.t | GraphQL.Type.NonNull.t
+end
+
 defimpl GraphQL.Types, for: Any do
   def parse_value(_, v), do:  v
   def serialize(_, v), do: v

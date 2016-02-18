@@ -98,7 +98,7 @@ defmodule GraphQL.Type.Introspection do
               %GraphQL.Type.Interface{} -> "INTERFACE"
               %GraphQL.Type.Union{} -> "UNION"
               %GraphQL.Type.Enum{} -> "ENUM"
-              #%GraphQL.Type.Input{} -> "INPUT_OBJECT"
+              %GraphQL.Type.Input{} -> "INPUT_OBJECT"
               %GraphQL.Type.List{} -> "LIST"
               %GraphQL.Type.NonNull{} -> "NON_NULL"
               # since we can't subclass, maybe we can just check

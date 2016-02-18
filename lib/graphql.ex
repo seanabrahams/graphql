@@ -9,7 +9,7 @@ defmodule GraphQL do
 
   Execute a GraphQL query against a given schema / datastore.
 
-      # iex> GraphQL.execute schema, "{ hello }"
+      # iex> GraphQL.execute(schema, "{ hello }")
       # {:ok, %{hello: "world"}}
   """
 
@@ -17,7 +17,7 @@ defmodule GraphQL do
   Execute a query against a schema.
 
       # iex> GraphQL.execute(schema, "{ hello }")
-      # {:ok, %{hello: world}}
+      # {:ok, %{hello: "world"}}
   """
   def execute(schema, query, root_value \\ %{}, variable_values \\ %{}, operation_name \\ nil) do
     case GraphQL.Lang.Parser.parse(query) do
