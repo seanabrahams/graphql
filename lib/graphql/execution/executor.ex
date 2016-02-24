@@ -251,10 +251,12 @@ defmodule GraphQL.Execution.Executor do
     |> GraphQL.Schema.type_from_ast(context.schema)
 
     cond do
-      # type_from_ast was :not_found, so ... false. Probably should be a validation error
-      typed_condition == :not_found -> false
       # there's no type condition exists, so everything matches
       typed_condition == nil -> true
+      # The type is hidden behind an Interface
+      Map.get(selection, :typeCondition).name.value == runtime_type.name -> true
+      # type_from_ast was :not_found, so ... false. Probably should be a validation error
+      typed_condition == :not_found -> false
       GraphQL.Type.is_abstract?(typed_condition) ->
         GraphQL.AbstractType.possible_type?(typed_condition, runtime_type)
       GraphQL.Type.is_named?(typed_condition) ->

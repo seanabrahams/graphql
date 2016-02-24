@@ -8,6 +8,8 @@ defmodule GraphQL.Execution.Executor.ExecutorTest do
   alias GraphQL.Type.ObjectType
   alias GraphQL.Type.List
   alias GraphQL.Type.ID
+  alias GraphQL.Type.Interface
+  alias GraphQL.Type.NonNull
   alias GraphQL.Type.String
   alias GraphQL.Type.Int
 
@@ -91,6 +93,97 @@ defmodule GraphQL.Execution.Executor.ExecutorTest do
       }
     }
     assert_execute {"{id, ... on AType { a }, ... on BType { b }}", schema}, %{id: "1", b: "b"}
+  end
+
+  defmodule NodeSchema do
+    def user_type do
+      %ObjectType{
+        name: "User",
+        fields: %{
+          id: %{
+            name: "id",
+            description: "The ID of an object",
+            type: %NonNull{ofType: %ID{}},
+            resolve: fn (obj, _args, _info) ->
+              Base.encode64("User:#{obj.id}")
+            end
+          },
+          name: %{type: %String{}}
+        },
+        interfaces: [node_interface]
+      }
+    end
+
+    def node_interface do
+      %{
+        name: "Node",
+        description: "An object with an ID",
+        fields: %{
+          id: %{
+            type: %NonNull{ofType: %ID{}},
+            description: "The id of the object."
+          }
+        },
+        resolver: fn(_obj) ->
+          user_type
+        end
+      } |> Interface.new
+    end
+
+    def node_field do
+      %{
+        name: "node",
+        description: "Fetches an object given its ID",
+        type: node_interface,
+        args: %{
+          id: %{
+            type: %NonNull{ofType: %ID{}},
+            description: "The ID of an object"
+          }
+        },
+        resolve: fn (_node, args, _ctx) ->
+          {:ok, type_id} = Base.decode64(args[:id])
+          [_type, id] = Elixir.String.split(type_id, ":")
+          key = Elixir.String.to_atom(id)
+          data = %{
+            "1": %{id: 1, name: "John Doe"},
+            "2": %{id: 2, name: "Jane Smith"}
+          }
+          Map.get(data, key)
+        end
+      }
+    end
+
+    def schema do
+      %Schema{
+        query: %ObjectType{
+          name: "Query",
+          fields: %{
+            node: node_field
+          }
+        }
+      }
+    end
+  end
+
+  test "inline fragments of types hidden behind an Interface" do
+    query = """
+      {
+        user: node(id: "VXNlcjox") {
+          id
+          ... on User {
+            name
+          }
+        }
+      }
+    """
+    assert_execute {query, NodeSchema.schema},
+      %{
+        user: %{
+          id: "VXNlcjox",
+          name: "John Doe"
+        }
+      }
   end
 
   test "TypeChecked fragments run the correct type" do
