@@ -44,4 +44,15 @@ defmodule ExUnit.TestHelpers do
   def assert_execute_error({query, schema, data}, expected_output) do
     assert GraphQL.execute(schema, query, data) == {:error, %{errors: stringify_keys(expected_output)}}
   end
+
+  def assert_introspection_includes_type(schema, expected) do
+    {:ok, introspection_results} = GraphQL.execute(schema, GraphQL.Type.Introspection.query, %{}, %{}, nil)
+    types = introspection_results[:data]["__schema"]["types"]
+    case Enum.any?(types, fn(type) -> Map.has_key?(type, "name") && type["name"] == expected.name end) do
+      true -> assert true
+      _ ->
+        type_names = Enum.join(Enum.map(types, fn(type) -> type["name"] end), ", ")
+        flunk "#{type_names} does not include #{expected.name}"
+    end
+  end
 end

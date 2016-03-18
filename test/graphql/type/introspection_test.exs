@@ -6,23 +6,73 @@ defmodule GraphQL.Type.IntrospectionTest do
   alias GraphQL.Schema
   alias GraphQL.Type.ObjectType
   alias GraphQL.Type.String
+  alias GraphQL.Type.Input
 
-  defmodule EmptySchema do
-    def schema do
-      %Schema{
-        query: %ObjectType{
-          name: "QueryRoot",
+  defmodule TestSchema do
+    def query do
+      %ObjectType{
+        name: "QueryRoot",
+        fields: %{
+          onlyField: %{type: %String{}}
+        }
+      }
+    end
+
+    def arg_input_type do
+      %Input{
+        name: "ArgInput",
+        fields: %{
+          id: %{type: %String{}},
+        }
+      }
+    end
+
+    def input_type_for_arg do
+      %{
+        name: "InputTypeForArg",
+        type: %ObjectType{
+          name: "InputTypeForArgPayload",
           fields: %{
-            onlyField: %{type: %String{}}
+            id: %{type: %String{}},
+          },
+        },
+        args: %{
+          input: %{
+            type: %Input{
+              name: "InputTypeForArgInput",
+              fields: %{
+                test_input: %{type: arg_input_type}
+              }
+            }
           }
         }
+      }
+    end
+
+    def mutation do
+      %ObjectType{
+        name: "Mutation",
+        fields: %{
+          input_type_for_arg: input_type_for_arg,
+        }
+      }
+    end
+
+    def schema do
+      %Schema{
+        query: query,
+        mutation: mutation,
       }
     end
   end
 
   test "basic query introspection" do
     # assert_execute
-    #   {GraphQL.Type.Introspection.query, EmptySchema.schema},
+    #   {GraphQL.Type.Introspection.query, TestSchema.schema},
+  end
+
+  test "includes input types when input type is an argument to a mutation" do
+    assert_introspection_includes_type(TestSchema.schema, TestSchema.arg_input_type)
   end
 
   @tag :skip # order matters for this... ... hm.
