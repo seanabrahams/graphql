@@ -27,9 +27,9 @@ defmodule GraphQL.Type.IntrospectionTest do
       }
     end
 
-    def input_type_for_arg do
+    def input_type_for_arg_mutation do
       %{
-        name: "InputTypeForArg",
+        name: "InputTypeForArgMutation",
         type: %ObjectType{
           name: "InputTypeForArgPayload",
           fields: %{
@@ -53,7 +53,7 @@ defmodule GraphQL.Type.IntrospectionTest do
       %ObjectType{
         name: "Mutation",
         fields: %{
-          input_type_for_arg: input_type_for_arg,
+          input_type_for_arg: input_type_for_arg_mutation,
         }
       }
     end

@@ -279,10 +279,16 @@ defmodule GraphQL.Type.Introspection do
           type: %{type: %NonNull{ofType: Type}},
           defaultValue: %{
             type: %String{},
-            description: "A GraphQL-formatted string representing the default value for this input value."
-            # resolve: inputVal => isNullish(inputVal.defaultValue) ?
-            #   null :
-            #   print(astFromValue(inputVal.defaultValue, inputVal))
+            description: "A GraphQL-formatted string representing the default value for this input value.",
+            resolve: fn(input_val, _, _) ->
+              case input_val do
+                %{"defaultValue" => default_value} ->
+                  # print(astFromValue(inputVal.defaultValue, inputVal))
+                  nil
+                _ ->
+                  nil
+              end
+            end
           }
         }
       }
